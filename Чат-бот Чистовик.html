@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedAI Москва — компактный интерфейс</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(76, 110, 245, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(0, 184, 148, 0.18), transparent 28%),
+        linear-gradient(135deg, #eef4ff 0%, #f8fbff 45%, #f2fff9 100%);
+      color: #1f2a44;
+      overflow: hidden;
+    }
+
+    body {
+      padding: 10px;
+    }
+
+    .app {
+      max-width: 1380px;
+      margin: 0 auto;
+      height: calc(100vh - 20px);
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr) 330px;
+      gap: 12px;
+    }
+
+    .panel,
+    .chat-shell {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(36, 76, 142, 0.12);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-content {
+      padding: 12px;
+      overflow-y: auto;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .panel-header {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid #eaf0fb;
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #243b6b;
+      line-height: 1.25;
+    }
+
+    .panel-subtitle {
+      margin-top: 5px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #6a7895;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2f6bff, #00b894);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 8px 18px rgba(47, 107, 255, 0.2);
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+      color: #18305c;
+    }
+
+    .brand-text p {
+      margin: 3px 0 0;
+      font-size: 11px;
+      line-height: 1.3;
+      color: #68809f;
+    }
+
+    .hero-card,
+    .info-card,
+    .history-card,
+    .timeline-item,
+    .doctor-queue-item {
+      background: linear-gradient(135deg, #ffffff, #f7fbff);
+      border: 1px solid #e8effb;
+      border-radius: 14px;
+    }
+
+    .hero-card {
+      padding: 12px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #eff5ff, #f4fffb);
+      border: 1px solid #ddeaff;
+    }
+
+    .hero-title {
+      margin: 0 0 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #20417c;
+    }
+
+    .hero-text {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #5d6f8f;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .kpi {
+      padding: 10px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid #ecf2fb;
+      box-shadow: 0 5px 12px rgba(48, 84, 132, 0.04);
+      min-width: 0;
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      color: #7b8ba7;
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+
+    .kpi-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #203861;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .badge-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .badge {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #edf4ff;
+      color: #2855a3;
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .chat-shell {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf2fb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(90deg, rgba(47, 107, 255, 0.04), rgba(0, 184, 148, 0.04));
+      flex-shrink: 0;
+    }
+
+    .chat-header-left {
+      min-width: 0;
+    }
+
+    .chat-header-left h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      color: #1f3766;
+    }
+
+    .chat-header-left p {
+      margin: 4px 0 0;
+      color: #6b7e9d;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .status-pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #eff8f4;
+      color: #11825d;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid #d5f1e5;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .chat-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 12px;
+      background:
+        linear-gradient(180deg, rgba(244, 248, 255, 0.7), rgba(255,255,255,0.9)),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 27px,
+          rgba(224, 233, 248, 0.18) 28px
+        );
+    }
+
+    .message-row {
+      display: flex;
+      margin-bottom: 10px;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .avatar.bot {
+      background: linear-gradient(135deg, #2f6bff, #00b894);
+      color: white;
+    }
+
+    .avatar.user {
+      background: #edf2fb;
+      color: #254376;
+    }
+
+    .message {
+      max-width: 78%;
+      padding: 10px 12px;
+      border-radius: 15px;
+      line-height: 1.45;
+      font-size: 12px;
+      white-space: pre-line;
+      box-shadow: 0 4px 10px rgba(60, 86, 122, 0.05);
+      word-break: break-word;
+    }
+
+    .message.bot {
+      background: #ffffff;
+      color: #294064;
+      border: 1px solid #ebf1fb;
+      border-bottom-left-radius: 8px;
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, #2f6bff, #4e8cff);
+      color: #ffffff;
+      border-bottom-right-radius: 8px;
+    }
+
+    .chat-controls {
+      border-top: 1px solid #edf2fb;
+      background: rgba(255,255,255,0.96);
+      padding: 10px 12px 12px;
+      flex-shrink: 0;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .option-btn,
+    .action-btn,
+    .mini-btn {
+      border: none;
+      cursor: pointer;
+      transition: 0.18s ease;
+      font-weight: 600;
+      font-family: inherit;
+    }
+
+    .option-btn {
+      padding: 10px;
+      border-radius: 12px;
+      background: #f4f8ff;
+      color: #27447d;
+      border: 1px solid #e2ebfb;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .option-btn:hover,
+    .action-btn:hover,
+    .mini-btn:hover,
+    .doctor-queue-item:hover {
+      transform: translateY(-1px);
+    }
+
+    .controls-bottom {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #2f6bff, #00b894);
+      color: white;
+      box-shadow: 0 7px 16px rgba(47, 107, 255, 0.18);
+    }
+
+    .action-btn.secondary {
+      background: #f4f8ff;
+      color: #24406d;
+      border: 1px solid #dde8fb;
+    }
+
+    .mini-btn {
+      padding: 7px 9px;
+      border-radius: 10px;
+      font-size: 10px;
+      background: #f4f8ff;
+      color: #254170;
+      border: 1px solid #dfe9fb;
+      line-height: 1.25;
+    }
+
+    .mini-btn.danger {
+      background: #fff3f3;
+      color: #a03e3e;
+      border: 1px solid #ffd6d6;
+    }
+
+    .info-card {
+      padding: 11px;
+      margin-bottom: 10px;
+    }
+
+    .info-card h3 {
+      margin: 0 0 7px;
+      font-size: 13px;
+      color: #23406f;
+      line-height: 1.25;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px dashed #e6edf8;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .info-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .info-label {
+      color: #7183a2;
+      min-width: 0;
+    }
+
+    .info-value {
+      font-weight: 600;
+      color: #223b66;
+      text-align: right;
+      min-width: 0;
+      max-width: 58%;
+      word-break: break-word;
+    }
+
+    .risk-box {
+      padding: 11px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fff8ec, #fffaf4);
+      border: 1px solid #ffe7bc;
+    }
+
+    .risk-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #8d5b00;
+      margin-bottom: 6px;
+    }
+
+    .risk-level {
+      font-size: 22px;
+      font-weight: 800;
+      color: #dd7a00;
+      margin-bottom: 4px;
+      line-height: 1.05;
+    }
+
+    .risk-description {
+      font-size: 11px;
+      line-height: 1.4;
+      color: #7d6a46;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .timeline-item {
+      padding: 9px 10px;
+    }
+
+    .timeline-time {
+      font-size: 9px;
+      color: #7b8ca8;
+      margin-bottom: 3px;
+    }
+
+    .timeline-text {
+      font-size: 11px;
+      line-height: 1.35;
+      color: #274067;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-card {
+      padding: 10px;
+    }
+
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 7px;
+      align-items: flex-start;
+    }
+
+    .history-id {
+      font-size: 10px;
+      font-weight: 700;
+      color: #2b4c89;
+      line-height: 1.25;
+    }
+
+    .history-date {
+      font-size: 9px;
+      color: #7d8da9;
+      text-align: right;
+      line-height: 1.25;
+    }
+
+    .history-priority {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 700;
+      margin-bottom: 7px;
+      line-height: 1.15;
+    }
+
+    .priority-low {
+      background: #eef8f1;
+      color: #1d8c52;
+    }
+
+    .priority-medium {
+      background: #fff7e9;
+      color: #b87400;
+    }
+
+    .priority-high {
+      background: #fff0f0;
+      color: #c54848;
+    }
+
+    .history-line {
+      font-size: 10px;
+      color: #51627f;
+      margin-bottom: 4px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .empty-history {
+      font-size: 11px;
+      color: #7c8ca8;
+      line-height: 1.4;
+      padding: 6px 0;
+    }
+
+    .doctor-panel {
+      margin-top: 10px;
+    }
+
+    .doctor-subtitle {
+      font-size: 10px;
+      line-height: 1.4;
+      color: #6d7f9d;
+      margin-bottom: 10px;
+    }
+
+    .doctor-queue-title,
+    .doctor-current-title,
+    .doctor-summary-title,
+    .doctor-actions-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #24406d;
+      margin: 10px 0 7px;
+      line-height: 1.3;
+    }
+
+    .doctor-queue {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .doctor-queue-item {
+      padding: 9px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .doctor-queue-item.selected {
+      border: 1px solid #2f6bff;
+      box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.1);
+    }
+
+    .doctor-queue-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+      align-items: flex-start;
+    }
+
+    .doctor-queue-id {
+      font-size: 10px;
+      font-weight: 700;
+      color: #2a4b87;
+      line-height: 1.25;
+    }
+
+    .doctor-queue-date {
+      font-size: 9px;
+      color: #7f8fa8;
+      text-align: right;
+      line-height: 1.25;
+    }
+
+    .doctor-queue-text {
+      font-size: 10px;
+      color: #52627c;
+      line-height: 1.35;
+      margin-bottom: 3px;
+      word-break: break-word;
+    }
+
+    .doctor-current-card {
+      padding: 9px;
+      border-radius: 12px;
+      background: #fbfdff;
+      border: 1px solid #e6eefc;
+    }
+
+    .doctor-summary {
+      padding: 9px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f6faff, #fbfffd);
+      border: 1px solid #e4eefc;
+      font-size: 10px;
+      line-height: 1.4;
+      color: #3d547d;
+    }
+
+    .doctor-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .doctor-note {
+      width: 100%;
+      min-height: 74px;
+      border-radius: 10px;
+      border: 1px solid #dbe7fb;
+      background: #fbfdff;
+      padding: 9px;
+      font-family: inherit;
+      font-size: 11px;
+      color: #2a4168;
+      resize: vertical;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 1180px) {
+      .app {
+        grid-template-columns: 210px minmax(0, 1fr) 300px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      html, body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .panel,
+      .chat-shell {
+        height: auto;
+        min-height: auto;
+      }
+
+      .options-grid,
+      .doctor-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 8px;
+      }
+
+      .app {
+        gap: 10px;
+      }
+
+      .chat-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .controls-bottom {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Левая панель -->
+    <aside class="panel">
+      <div class="panel-content">
+        <div class="brand">
+          <div class="brand-logo">M+</div>
+          <div class="brand-text">
+            <h1>MedAI Москва</h1>
+            <p>Интеллектуальный медицинский ассистент</p>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-title">Инновационная концепция</div>
+          <p class="hero-text">
+            Сервис разделяет сценарии для пациента и врача, формирует
+            структурированный цифровой профиль обращения, сохраняет записи
+            в локальную базу данных и поддерживает врачебную маршрутизацию.
+          </p>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Режимы работы</div>
+            <div class="kpi-value">Пациент / Врач</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">История записей</div>
+            <div class="kpi-value">Digital DB</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Предварительный триаж</div>
+            <div class="kpi-value">Smart Triage</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Поддержка врача</div>
+            <div class="kpi-value">Clinical Panel</div>
+          </div>
+        </div>
+
+        <div class="badge-list">
+          <div class="badge">ЕМИАС</div>
+          <div class="badge">Телемедицина</div>
+          <div class="badge">История записей</div>
+          <div class="badge">Кабинет врача</div>
+          <div class="badge">AI Ready</div>
+          <div class="badge">Маршрутизация</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Центральный чат -->
+    <main class="chat-shell">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <h2>Цифровой ассистент MedAI</h2>
+          <p>Отдельные сценарии для пациента и врача, цифровой профиль и база обращений</p>
+        </div>
+        <div class="status-pill" id="statusPill">Система активна</div>
+      </div>
+
+      <div class="chat-body" id="chatBody"></div>
+
+      <div class="chat-controls">
+        <div class="options-grid" id="options"></div>
+        <div class="controls-bottom">
+          <button class="action-btn secondary" onclick="restartBot()">Начать заново</button>
+          <button class="action-btn primary" onclick="showInnovationInfo()">Показать инновационные функции</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Правая панель -->
+    <aside class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Цифровой профиль, база записей и кабинет врача</h3>
+        <div class="panel-subtitle">
+          Система сохраняет обращения пациентов и действия врачей в единую локальную базу данных.
+        </div>
+      </div>
+
+      <div class="panel-content" id="rightPanelContent">
+        <div class="info-card">
+          <h3>Текущий профиль обращения</h3>
+          <div class="info-item">
+            <div class="info-label">Роль</div>
+            <div class="info-value" id="profileRole">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Пациент</div>
+            <div class="info-value" id="profilePatient">Не идентифицирован</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Возрастная группа</div>
+            <div class="info-value" id="profileAge">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Тип обращения</div>
+            <div class="info-value" id="profileRequest">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Симптом</div>
+            <div class="info-value" id="profileSymptom">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Продолжительность</div>
+            <div class="info-value" id="profileDuration">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Интенсивность</div>
+            <div class="info-value" id="profileSeverity">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Факторы</div>
+            <div class="info-value" id="profileFactors">—</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Маршрут</div>
+            <div class="info-value" id="profileRoute">—</div>
+          </div>
+        </div>
+
+        <div class="risk-box">
+          <div class="risk-title">Оценка приоритета</div>
+          <div class="risk-level" id="riskLevel">Низкий</div>
+          <div class="risk-description" id="riskDescription">
+            Данных пока недостаточно. После завершения сценария система определит приоритет и маршрут.
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Цифровой след обращения</h3>
+          <div class="timeline" id="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">Сейчас</div>
+              <div class="timeline-text">Ожидание начала взаимодействия.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card" id="historySection">
+          <h3>База записей</h3>
+          <div class="history-actions">
+            <button class="mini-btn" onclick="renderHistory()">Обновить список</button>
+            <button class="mini-btn danger" onclick="clearHistory()">Очистить историю</button>
+          </div>
+          <div id="historyList" class="history-list">
+            <div class="empty-history">История пока пуста.</div>
+          </div>
+        </div>
+
+        <div class="info-card doctor-panel" id="doctorSection">
+          <h3>Кабинет врача / Панель клинической маршрутизации</h3>
+          <div class="doctor-subtitle">
+            Раздел предназначен для просмотра пациентских обращений, сформированных чат-ботом,
+            и принятия врачебных решений на основе структурированных данных.
+          </div>
+
+          <div class="doctor-queue-title">Очередь обращений пациентов</div>
+          <div id="doctorQueue" class="doctor-queue">
+            <div class="empty-history">Пациентских обращений пока нет.</div>
+          </div>
+
+          <div class="doctor-current-title">Карточка текущего обращения</div>
+          <div class="doctor-current-card">
+            <div class="info-item">
+              <div class="info-label">ID обращения</div>
+              <div class="info-value" id="doctorCaseId">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Пациент</div>
+              <div class="info-value" id="doctorPatient">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Возраст</div>
+              <div class="info-value" id="doctorAge">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Симптом</div>
+              <div class="info-value" id="doctorSymptom">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Интенсивность</div>
+              <div class="info-value" id="doctorSeverity">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Приоритет</div>
+              <div class="info-value" id="doctorRisk">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Маршрут</div>
+              <div class="info-value" id="doctorRoute">—</div>
+            </div>
+          </div>
+
+          <div class="doctor-summary-title">Краткая клиническая сводка</div>
+          <div class="doctor-summary" id="doctorSummary">
+            Сводка появится после выбора обращения из очереди.
+          </div>
+
+          <div class="doctor-actions-title">Быстрые действия врача</div>
+          <div class="doctor-actions">
+            <button class="mini-btn" onclick="doctorAction('Маршрут подтвержден врачом')">Подтвердить маршрут</button>
+            <button class="mini-btn" onclick="doctorAction('Пациент направлен на очный прием')">На очный прием</button>
+            <button class="mini-btn" onclick="doctorAction('Пациент переведен в телемедицинский формат')">В телемедицину</button>
+            <button class="mini-btn" onclick="doctorAction('Обращение завершено врачом')">Завершить обращение</button>
+          </div>
+
+          <div class="doctor-actions-title">Заключение врача</div>
+          <textarea id="doctorNote" class="doctor-note" placeholder="Введите краткое врачебное заключение..."></textarea>
+          <button class="action-btn primary" style="margin-top:8px; width:100%;" onclick="saveDoctorNote()">Сохранить заключение</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const chatBody = document.getElementById("chatBody");
+    const options = document.getElementById("options");
+    const statusPill = document.getElementById("statusPill");
+    const timeline = document.getElementById("timeline");
+    const historyList = document.getElementById("historyList");
+    const doctorQueueEl = document.getElementById("doctorQueue");
+    const rightPanelContent = document.getElementById("rightPanelContent");
+
+    let specialistChosen = "";
+    let finalRoute = "";
+    let historyDB = JSON.parse(localStorage.getItem("medai_history") || "[]");
+    let selectedDoctorCase = null;
+    let currentRole = "";
+
+    const profile = {
+      role: "—",
+      patient: "Не идентифицирован",
+      age: "—",
+      request: "—",
+      symptom: "—",
+      duration: "—",
+      severity: "—",
+      factors: "—",
+      route: "—",
+      risk: "Низкий",
+      riskText: "Данных пока недостаточно. После завершения сценария система определит приоритет и маршрут."
+    };
+
+    function nowTime() {
+      const d = new Date();
+      return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function nowDate() {
+      const d = new Date();
+      return d.toLocaleString("ru-RU");
+    }
+
+    function updateProfile() {
+      document.getElementById("profileRole").textContent = profile.role;
+      document.getElementById("profilePatient").textContent = profile.patient;
+      document.getElementById("profileAge").textContent = profile.age;
+      document.getElementById("profileRequest").textContent = profile.request;
+      document.getElementById("profileSymptom").textContent = profile.symptom;
+      document.getElementById("profileDuration").textContent = profile.duration;
+      document.getElementById("profileSeverity").textContent = profile.severity;
+      document.getElementById("profileFactors").textContent = profile.factors;
+      document.getElementById("profileRoute").textContent = profile.route;
+      document.getElementById("riskLevel").textContent = profile.risk;
+      document.getElementById("riskDescription").textContent = profile.riskText;
+    }
+
+    function resetProfile() {
+      profile.role = "—";
+      profile.patient = "Не идентифицирован";
+      profile.age = "—";
+      profile.request = "—";
+      profile.symptom = "—";
+      profile.duration = "—";
+      profile.severity = "—";
+      profile.factors = "—";
+      profile.route = "—";
+      profile.risk = "Низкий";
+      profile.riskText = "Данных пока недостаточно. После завершения сценария система определит приоритет и маршрут.";
+      specialistChosen = "";
+      finalRoute = "";
+      currentRole = "";
+      updateProfile();
+    }
+
+    function addTimeline(text) {
+      const item = document.createElement("div");
+      item.className = "timeline-item";
+      item.innerHTML = `
+        <div class="timeline-time">${nowTime()}</div>
+        <div class="timeline-text">${text}</div>
+      `;
+      timeline.prepend(item);
+    }
+
+    function addMessage(text, sender = "bot") {
+      const row = document.createElement("div");
+      row.className = "message-row " + (sender === "user" ? "user" : "bot");
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar " + sender;
+      avatar.textContent = sender === "bot" ? "✚" : "👤";
+
+      const message = document.createElement("div");
+      message.className = "message " + sender;
+      message.textContent = text;
+
+      if (sender === "bot") {
+        row.appendChild(avatar);
+        row.appendChild(message);
+      } else {
+        row.appendChild(message);
+        row.appendChild(avatar);
+      }
+
+      chatBody.appendChild(row);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function setOptions(buttons) {
+      options.innerHTML = "";
+      buttons.forEach(btn => {
+        const b = document.createElement("button");
+        b.className = "option-btn";
+        b.textContent = btn.label;
+        b.onclick = btn.action;
+        options.appendChild(b);
+      });
+    }
+
+    function setStatus(text) {
+      statusPill.textContent = text;
+    }
+
+    function userChoice(text) {
+      addMessage(text, "user");
+    }
+
+    function priorityClass(priority) {
+      if (priority === "Высокий") return "priority-high";
+      if (priority === "Средний") return "priority-medium";
+      return "priority-low";
+    }
+
+    function persistHistory() {
+      localStorage.setItem("medai_history", JSON.stringify(historyDB));
+    }
+
+    function scrollToHistorySection() {
+      const historySection = document.getElementById("historySection");
+      if (historySection && rightPanelContent) {
+        rightPanelContent.scrollTo({
+          top: historySection.offsetTop - 8,
+          behavior: "smooth"
+        });
+      }
+    }
+
+    function openHistoryPanel() {
+      renderHistory();
+
+      addMessage(
+        "Открыт раздел базы записей.\n\n" +
+        "Справа отображаются все сохранённые пациентские обращения и врачебные решения.",
+        "bot"
+      );
+
+      addTimeline("Пользователь открыл раздел базы записей.");
+      setStatus("Просмотр базы записей");
+
+      setTimeout(() => {
+        scrollToHistorySection();
+      }, 120);
+    }
+
+    function savePatientToHistory() {
+      const entry = {
+        id: "PAT-" + String(Date.now()).slice(-6),
+        recordType: "patient_request",
+        role: "Пациент",
+        date: nowDate(),
+        patient: profile.patient,
+        age: profile.age,
+        request: profile.request,
+        symptom: profile.symptom,
+        duration: profile.duration,
+        severity: profile.severity,
+        factors: profile.factors,
+        risk: profile.risk,
+        specialist: specialistChosen || "Не указан",
+        route: finalRoute || profile.route || "Не определен"
+      };
+
+      historyDB.unshift(entry);
+      persistHistory();
+      renderHistory();
+      renderDoctorQueue();
+      addTimeline("Пациентское обращение сохранено в базе: " + entry.id + ".");
+    }
+
+    function saveDoctorActionToHistory(actionText, noteText = "") {
+      if (!selectedDoctorCase) {
+        addMessage("Сначала выберите пациентское обращение в кабинете врача.", "bot");
+        return false;
+      }
+
+      const entry = {
+        id: "DOC-" + String(Date.now()).slice(-6),
+        recordType: "doctor_action",
+        role: "Врач",
+        date: nowDate(),
+        linkedCaseId: selectedDoctorCase.id,
+        doctorAction: actionText,
+        decision: actionText,
+        note: noteText || "Без дополнительного заключения"
+      };
+
+      historyDB.unshift(entry);
+      persistHistory();
+      renderHistory();
+      addTimeline("Врачебное действие сохранено в базе: " + entry.id + ".");
+      return true;
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = "";
+
+      if (historyDB.length === 0) {
+        historyList.innerHTML = `<div class="empty-history">История пока пуста.</div>`;
+        return;
+      }
+
+      historyDB.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "history-card";
+
+        if (item.recordType === "patient_request") {
+          card.innerHTML = `
+            <div class="history-top">
+              <div class="history-id">${item.id}</div>
+              <div class="history-date">${item.date}</div>
+            </div>
+            <div class="history-priority ${priorityClass(item.risk)}">${item.risk} приоритет</div>
+            <div class="history-line"><strong>Тип записи:</strong> Пациентское обращение</div>
+            <div class="history-line"><strong>Возраст:</strong> ${item.age || "—"}</div>
+            <div class="history-line"><strong>Запрос:</strong> ${item.request || "—"}</div>
+            <div class="history-line"><strong>Симптом:</strong> ${item.symptom || "—"}</div>
+            <div class="history-line"><strong>Интенсивность:</strong> ${item.severity || "—"}</div>
+            <div class="history-line"><strong>Маршрут:</strong> ${item.route || "—"}</div>
+            <div class="history-line"><strong>Специалист:</strong> ${item.specialist || "Не указан"}</div>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="history-top">
+              <div class="history-id">${item.id}</div>
+              <div class="history-date">${item.date}</div>
+            </div>
+            <div class="history-priority priority-low">Врачебное действие</div>
+            <div class="history-line"><strong>Тип записи:</strong> Решение врача</div>
+            <div class="history-line"><strong>Связанный случай:</strong> ${item.linkedCaseId || "—"}</div>
+            <div class="history-line"><strong>Действие:</strong> ${item.doctorAction || "—"}</div>
+            <div class="history-line"><strong>Заключение:</strong> ${item.note || "Без заключения"}</div>
+          `;
+        }
+
+        historyList.appendChild(card);
+      });
+    }
+
+    function clearHistory() {
+      localStorage.removeItem("medai_history");
+      historyDB = [];
+      selectedDoctorCase = null;
+      renderHistory();
+      renderDoctorQueue();
+      resetDoctorCard();
+      addMessage("Локальная база записей очищена.", "bot");
+      addTimeline("Пользователь очистил локальную базу данных.");
+    }
+
+    function showInnovationInfo() {
+      addMessage(
+        "Инновационные функции MedAI:\n\n" +
+        "1. Разделение сценариев для пациента и врача.\n" +
+        "2. Интеллектуальный предварительный триаж.\n" +
+        "3. Структурированный сбор данных вместо свободного текста.\n" +
+        "4. Сохранение пациентских и врачебных записей в локальную базу.\n" +
+        "5. Кабинет врача для клинической маршрутизации и заключений.\n" +
+        "6. Основа для интеграции с ЕМИАС и аналитическими системами.",
+        "bot"
+      );
+      addTimeline("Пользователю показан блок инновационных функций.");
+    }
+
+    function restartBot() {
+      chatBody.innerHTML = "";
+      options.innerHTML = "";
+      timeline.innerHTML = `
+        <div class="timeline-item">
+          <div class="timeline-time">Сейчас</div>
+          <div class="timeline-text">Ожидание начала взаимодействия.</div>
+        </div>
+      `;
+      resetProfile();
+      setStatus("Система активна");
+      startScenario();
+    }
+
+    function startScenario() {
+      addMessage(
+        "Здравствуйте! Я MedAI Москва — интеллектуальный медицинский ассистент.\n\n" +
+        "Пожалуйста, выберите, кто инициирует обращение.",
+        "bot"
+      );
+      addTimeline("Система ожидает выбор роли пользователя.");
+      setStatus("Выбор роли");
+
+      setOptions([
+        {
+          label: "Я пациент",
+          action: startPatientFlow
+        },
+        {
+          label: "Я врач",
+          action: startDoctorFlow
+        }
+      ]);
+    }
+
+    function startPatientFlow() {
+      currentRole = "Пациент";
+      profile.role = "Пациент";
+      updateProfile();
+
+      userChoice("Я пациент");
+      addMessage(
+        "Выбран режим пациента.\n\n" +
+        "Я помогу оформить обращение, провести предварительный опрос, определить приоритет и сохранить запись в цифровую базу.",
+        "bot"
+      );
+      addTimeline("Активирован сценарий пациента.");
+      setStatus("Режим пациента");
+      chooseAge();
+    }
+
+    function startDoctorFlow() {
+      currentRole = "Врач";
+      profile.role = "Врач";
+      profile.request = "Просмотр обращений и клиническая маршрутизация";
+      updateProfile();
+
+      userChoice("Я врач");
+      addMessage(
+        "Выбран режим врача.\n\n" +
+        "Вам доступны просмотр очереди обращений пациентов, клиническая маршрутизация и просмотр базы записей.",
+        "bot"
+      );
+      addTimeline("Активирован сценарий врача.");
+      setStatus("Режим врача");
+
+      setOptions([
+        {
+          label: "Открыть очередь обращений",
+          action: openDoctorQueue
+        },
+        {
+          label: "Просмотреть базу записей",
+          action: openHistoryPanel
+        },
+        {
+          label: "Начать заново",
+          action: restartBot
+        }
+      ]);
+    }
+
+    function chooseAge() {
+      addMessage("Укажите возрастную группу пациента.", "bot");
+      setOptions([
+        {
+          label: "До 18 лет",
+          action: () => {
+            userChoice("До 18 лет");
+            profile.age = "До 18 лет";
+            profile.patient = "Пациент / законный представитель";
+            updateProfile();
+            addTimeline("Выбрана детская возрастная группа.");
+            chooseRequest();
+          }
+        },
+        {
+          label: "18–59 лет",
+          action: () => {
+            userChoice("18–59 лет");
+            profile.age = "18–59 лет";
+            profile.patient = "Взрослый пациент";
+            updateProfile();
+            addTimeline("Выбрана взрослая возрастная группа.");
+            chooseRequest();
+          }
+        },
+        {
+          label: "60+",
+          action: () => {
+            userChoice("60+");
+            profile.age = "60+";
+            profile.patient = "Пациент старшей возрастной группы";
+            updateProfile();
+            addTimeline("Выбрана старшая возрастная группа.");
+            chooseRequest();
+          }
+        }
+      ]);
+    }
+
+    function chooseRequest() {
+      addMessage("Какова основная цель обращения?", "bot");
+      setOptions([
+        {
+          label: "Сообщить о симптомах",
+          action: () => {
+            userChoice("Сообщить о симптомах");
+            profile.request = "Первичный симптом-ориентированный опрос";
+            updateProfile();
+            addTimeline("Выбран сценарий симптом-ориентированного обращения.");
+            chooseSymptom();
+          }
+        },
+        {
+          label: "Записаться к врачу",
+          action: () => {
+            userChoice("Записаться к врачу");
+            profile.request = "Цифровая запись к врачу";
+            profile.route = "Переход к выбору специалиста";
+            updateProfile();
+            addTimeline("Выбран сценарий записи к врачу.");
+            chooseSpecialist();
+          }
+        },
+        {
+          label: "Телемедицинская консультация",
+          action: () => {
+            userChoice("Телемедицинская консультация");
+            profile.request = "Телемедицинское взаимодействие";
+            profile.route = "Дистанционный сценарий сопровождения";
+            updateProfile();
+            addTimeline("Выбран телемедицинский сценарий.");
+            telemedicineFlow();
+          }
+        },
+        {
+          label: "Профилактический мониторинг",
+          action: () => {
+            userChoice("Профилактический мониторинг");
+            profile.request = "Профилактический цифровой мониторинг";
+            profile.route = "Превентивное цифровое сопровождение";
+            updateProfile();
+            addTimeline("Выбран профилактический сценарий.");
+            preventionFlow();
+          }
+        }
+      ]);
+    }
+
+    function chooseSymptom() {
+      addMessage("Выберите основной симптом.", "bot");
+      setOptions([
+        {
+          label: "Повышенная температура",
+          action: () => {
+            userChoice("Повышенная температура");
+            profile.symptom = "Температура";
+            updateProfile();
+            addTimeline("Выбран симптом: температура.");
+            askDuration("temperature");
+          }
+        },
+        {
+          label: "Боль в груди",
+          action: () => {
+            userChoice("Боль в груди");
+            profile.symptom = "Боль в груди";
+            updateProfile();
+            addTimeline("Выбран симптом: боль в груди.");
+            askDuration("chestPain");
+          }
+        },
+        {
+          label: "Кашель / Одышка",
+          action: () => {
+            userChoice("Кашель / Одышка");
+            profile.symptom = "Кашель / одышка";
+            updateProfile();
+            addTimeline("Выбран симптом: кашель или одышка.");
+            askDuration("cough");
+          }
+        },
+        {
+          label: "Головная боль",
+          action: () => {
+            userChoice("Головная боль");
+            profile.symptom = "Головная боль";
+            updateProfile();
+            addTimeline("Выбран симптом: головная боль.");
+            askDuration("headache");
+          }
+        }
+      ]);
+    }
+
+    function askDuration(type) {
+      addMessage("Как давно наблюдается симптом?", "bot");
+      setOptions([
+        {
+          label: "Менее суток",
+          action: () => {
+            userChoice("Менее суток");
+            profile.duration = "Менее суток";
+            updateProfile();
+            askSeverity(type);
+          }
+        },
+        {
+          label: "1–3 дня",
+          action: () => {
+            userChoice("1–3 дня");
+            profile.duration = "1–3 дня";
+            updateProfile();
+            askSeverity(type);
+          }
+        },
+        {
+          label: "Более 3 дней",
+          action: () => {
+            userChoice("Более 3 дней");
+            profile.duration = "Более 3 дней";
+            updateProfile();
+            askSeverity(type);
+          }
+        }
+      ]);
+    }
+
+    function askSeverity(type) {
+      addMessage("Оцените интенсивность симптома.", "bot");
+      setOptions([
+        {
+          label: "Легкая",
+          action: () => {
+            userChoice("Легкая");
+            profile.severity = "Легкая";
+            updateProfile();
+            askFactors(type, "low");
+          }
+        },
+        {
+          label: "Умеренная",
+          action: () => {
+            userChoice("Умеренная");
+            profile.severity = "Умеренная";
+            updateProfile();
+            askFactors(type, "medium");
+          }
+        },
+        {
+          label: "Сильная",
+          action: () => {
+            userChoice("Сильная");
+            profile.severity = "Сильная";
+            updateProfile();
+            askFactors(type, "high");
+          }
+        }
+      ]);
+    }
+
+    function askFactors(type, severity) {
+      addMessage("Есть ли дополнительные факторы риска?", "bot");
+      setOptions([
+        {
+          label: "Нет",
+          action: () => {
+            userChoice("Нет");
+            profile.factors = "Не выявлены";
+            updateProfile();
+            evaluateRisk(type, severity, false);
+          }
+        },
+        {
+          label: "Есть хронические заболевания",
+          action: () => {
+            userChoice("Есть хронические заболевания");
+            profile.factors = "Хронические заболевания";
+            updateProfile();
+            evaluateRisk(type, severity, true);
+          }
+        },
+        {
+          label: "Есть резкое ухудшение",
+          action: () => {
+            userChoice("Есть резкое ухудшение");
+            profile.factors = "Резкое ухудшение самочувствия";
+            updateProfile();
+            evaluateRisk(type, "high", true);
+          }
+        }
+      ]);
+    }
+
+    function evaluateRisk(type, severity, factors) {
+      let risk = "Низкий";
+      let riskText = "Рекомендуется плановая маршрутизация пациента.";
+      let route = "Плановая самозапись к врачу или наблюдение.";
+
+      if (type === "chestPain" || (severity === "high" && factors)) {
+        risk = "Высокий";
+        riskText = "Требуется ускоренная маршрутизация и приоритетное внимание медицинского персонала.";
+        route = "Срочная очная консультация или неотложная помощь.";
+      } else if (severity === "high" || factors || profile.duration === "Более 3 дней") {
+        risk = "Средний";
+        riskText = "Рекомендуется ускоренная запись к профильному специалисту.";
+        route = "Ускоренная маршрутизация в амбулаторное звено.";
+      }
+
+      profile.risk = risk;
+      profile.riskText = riskText;
+      profile.route = route;
+      finalRoute = route;
+      updateProfile();
+
+      addMessage(
+        "Анализ завершен.\n\n" +
+        "Приоритет обращения: " + risk + ".\n" +
+        "Рекомендованный маршрут: " + route + "\n\n" +
+        "Далее вы можете записаться к врачу, открыть телемедицинский сценарий или сохранить обращение в базу.",
+        "bot"
+      );
+
+      addTimeline("Система выполнила оценку приоритета обращения.");
+      setStatus("Оценка завершена");
+
+      setOptions([
+        {
+          label: "Записаться к врачу",
+          action: chooseSpecialist
+        },
+        {
+          label: "Открыть телемедицину",
+          action: telemedicineFlow
+        },
+        {
+          label: "Сохранить обращение в базу",
+          action: finalizeRecord
+        }
+      ]);
+    }
+
+    function chooseSpecialist() {
+      addMessage("Выберите специалиста для маршрутизации.", "bot");
+      setOptions([
+        {
+          label: "Терапевт",
+          action: () => specialistResult("Терапевт", "Амбулаторный прием терапевта")
+        },
+        {
+          label: "Кардиолог",
+          action: () => specialistResult("Кардиолог", "Профильный кардиологический маршрут")
+        },
+        {
+          label: "Пульмонолог",
+          action: () => specialistResult("Пульмонолог", "Профильный пульмонологический маршрут")
+        },
+        {
+          label: "Телемедицинский консультант",
+          action: () => specialistResult("Телемедицинский консультант", "Дистанционный маршрут консультации")
+        }
+      ]);
+    }
+
+    function specialistResult(specialist, routeText) {
+      userChoice(specialist);
+      specialistChosen = specialist;
+      finalRoute = routeText;
+      profile.route = routeText;
+      updateProfile();
+
+      addMessage(
+        "Маршрутизация выполнена.\n\n" +
+        "Выбран специалист: " + specialist + ".\n" +
+        "Итоговый маршрут: " + routeText + ".\n\n" +
+        "Теперь обращение может быть сохранено в базе данных.",
+        "bot"
+      );
+
+      addTimeline("Пациент маршрутизирован к специалисту: " + specialist + ".");
+      setStatus("Маршрутизация выполнена");
+
+      setOptions([
+        {
+          label: "Сохранить запись в базу",
+          action: finalizeRecord
+        },
+        {
+          label: "Начать новый сценарий",
+          action: restartBot
+        }
+      ]);
+    }
+
+    function telemedicineFlow() {
+      addMessage(
+        "Телемедицинский модуль активирован.\n\n" +
+        "Выберите подходящий сценарий дистанционного взаимодействия.",
+        "bot"
+      );
+
+      setOptions([
+        {
+          label: "Повторная консультация",
+          action: () => telemedicineResult("Повторная консультация")
+        },
+        {
+          label: "Контроль хронического состояния",
+          action: () => telemedicineResult("Контроль хронического состояния")
+        },
+        {
+          label: "Дистанционный мониторинг",
+          action: () => telemedicineResult("Дистанционный мониторинг")
+        }
+      ]);
+
+      setStatus("Телемедицина активна");
+      addTimeline("Открыт телемедицинский модуль.");
+    }
+
+    function telemedicineResult(type) {
+      userChoice(type);
+      specialistChosen = "Телемедицинский консультант";
+      finalRoute = type;
+      profile.route = type;
+      updateProfile();
+
+      addMessage(
+        "Телемедицинский сценарий подтвержден: " + type + ".\n\n" +
+        "Обращение может быть сохранено в базе как цифровая запись дистанционного сопровождения.",
+        "bot"
+      );
+
+      addTimeline("Подтвержден телемедицинский сценарий: " + type + ".");
+      setOptions([
+        {
+          label: "Сохранить запись в базу",
+          action: finalizeRecord
+        },
+        {
+          label: "Начать новый сценарий",
+          action: restartBot
+        }
+      ]);
+    }
+
+    function preventionFlow() {
+      addMessage(
+        "Профилактический режим активирован.\n\n" +
+        "Этот сценарий используется для цифрового контроля состояния пациента и раннего выявления отклонений.",
+        "bot"
+      );
+
+      setOptions([
+        {
+          label: "Контроль давления",
+          action: () => preventionResult("Контроль артериального давления")
+        },
+        {
+          label: "Мониторинг глюкозы",
+          action: () => preventionResult("Мониторинг уровня глюкозы")
+        },
+        {
+          label: "Общий контроль самочувствия",
+          action: () => preventionResult("Общий контроль самочувствия")
+        }
+      ]);
+
+      setStatus("Профилактический режим");
+      addTimeline("Активирован профилактический режим.");
+    }
+
+    function preventionResult(type) {
+      userChoice(type);
+      specialistChosen = "Цифровой профилактический модуль";
+      finalRoute = type;
+      profile.route = type;
+      updateProfile();
+
+      addMessage(
+        "Профилактический сценарий выбран: " + type + ".\n\n" +
+        "Данные можно сохранить в базе цифровых наблюдений.",
+        "bot"
+      );
+
+      addTimeline("Выбран профилактический сценарий: " + type + ".");
+      setOptions([
+        {
+          label: "Сохранить запись в базу",
+          action: finalizeRecord
+        },
+        {
+          label: "Начать новый сценарий",
+          action: restartBot
+        }
+      ]);
+    }
+
+    function finalizeRecord() {
+      savePatientToHistory();
+
+      addMessage(
+        "Запись успешно сохранена.\n\n" +
+        "Обращение внесено в базу данных пациента и доступно для последующего просмотра в кабинете врача.",
+        "bot"
+      );
+
+      setStatus("Пациентская запись сохранена");
+
+      setOptions([
+        {
+          label: "Начать новый сценарий",
+          action: restartBot
+        },
+        {
+          label: "Обновить историю записей",
+          action: openHistoryPanel
+        }
+      ]);
+    }
+
+    function openDoctorQueue() {
+      const patientCases = historyDB.filter(item => item.recordType === "patient_request");
+
+      if (patientCases.length === 0) {
+        addMessage(
+          "В очереди пока нет пациентских обращений. Сначала необходимо, чтобы пациент завершил сценарий обращения.",
+          "bot"
+        );
+        addTimeline("Врач попытался открыть очередь, но пациентских записей пока нет.");
+        return;
+      }
+
+      addMessage(
+        "Найдены пациентские обращения.\n\n" +
+        "Выберите нужное обращение в правой панели, в блоке 'Кабинет врача / Панель клинической маршрутизации'.",
+        "bot"
+      );
+
+      renderDoctorQueue();
+      addTimeline("Открыта очередь пациентских обращений для врача.");
+
+      const doctorSection = document.getElementById("doctorSection");
+      if (doctorSection && rightPanelContent) {
+        rightPanelContent.scrollTo({
+          top: doctorSection.offsetTop - 8,
+          behavior: "smooth"
+        });
+      }
+    }
+
+    function renderDoctorQueue() {
+      doctorQueueEl.innerHTML = "";
+
+      const patientCases = historyDB.filter(item => item.recordType === "patient_request");
+
+      if (patientCases.length === 0) {
+        doctorQueueEl.innerHTML = `<div class="empty-history">Пациентских обращений пока нет.</div>`;
+        return;
+      }
+
+      patientCases.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "doctor-queue-item";
+        if (selectedDoctorCase && selectedDoctorCase.id === item.id) {
+          card.classList.add("selected");
+        }
+
+        card.innerHTML = `
+          <div class="doctor-queue-top">
+            <div class="doctor-queue-id">${item.id}</div>
+            <div class="doctor-queue-date">${item.date}</div>
+          </div>
+          <div class="history-priority ${priorityClass(item.risk)}">${item.risk} приоритет</div>
+          <div class="doctor-queue-text"><strong>Симптом:</strong> ${item.symptom}</div>
+          <div class="doctor-queue-text"><strong>Маршрут:</strong> ${item.route}</div>
+        `;
+
+        card.onclick = () => selectDoctorCase(item);
+        doctorQueueEl.appendChild(card);
+      });
+    }
+
+    function resetDoctorCard() {
+      document.getElementById("doctorCaseId").textContent = "—";
+      document.getElementById("doctorPatient").textContent = "—";
+      document.getElementById("doctorAge").textContent = "—";
+      document.getElementById("doctorSymptom").textContent = "—";
+      document.getElementById("doctorSeverity").textContent = "—";
+      document.getElementById("doctorRisk").textContent = "—";
+      document.getElementById("doctorRoute").textContent = "—";
+      document.getElementById("doctorSummary").textContent = "Сводка появится после выбора обращения из очереди.";
+      document.getElementById("doctorNote").value = "";
+    }
+
+    function selectDoctorCase(item) {
+      selectedDoctorCase = item;
+
+      document.getElementById("doctorCaseId").textContent = item.id;
+      document.getElementById("doctorPatient").textContent = item.patient;
+      document.getElementById("doctorAge").textContent = item.age;
+      document.getElementById("doctorSymptom").textContent = item.symptom;
+      document.getElementById("doctorSeverity").textContent = item.severity;
+      document.getElementById("doctorRisk").textContent = item.risk;
+      document.getElementById("doctorRoute").textContent = item.route;
+
+      document.getElementById("doctorSummary").textContent =
+        "Пациент прошёл предварительный цифровой опрос. " +
+        "Основной симптом: " + item.symptom + ". " +
+        "Интенсивность: " + item.severity + ". " +
+        "Приоритет обращения: " + item.risk + ". " +
+        "Первично предложенный маршрут: " + item.route + ".";
+
+      addMessage(
+        "Открыта карточка обращения " + item.id + ". Врач может подтвердить или изменить маршрут, а также сохранить заключение.",
+        "bot"
+      );
+
+      addTimeline("Врач открыл пациентское обращение: " + item.id + ".");
+      renderDoctorQueue();
+    }
+
+    function doctorAction(actionText) {
+      if (!selectedDoctorCase) {
+        addMessage("Сначала выберите обращение из врачебной очереди.", "bot");
+        return;
+      }
+
+      addMessage("Врачебное действие: " + actionText, "bot");
+      const saved = saveDoctorActionToHistory(actionText);
+
+      if (saved) {
+        addTimeline("Зафиксировано врачебное действие по обращению " + selectedDoctorCase.id + ": " + actionText + ".");
+      }
+    }
+
+    function saveDoctorNote() {
+      const note = document.getElementById("doctorNote").value.trim();
+
+      if (!selectedDoctorCase) {
+        addMessage("Сначала выберите пациентское обращение.", "bot");
+        return;
+      }
+
+      if (!note) {
+        addMessage("Введите текст заключения врача перед сохранением.", "bot");
+        return;
+      }
+
+      const saved = saveDoctorActionToHistory("Сохранено врачебное заключение", note);
+
+      if (saved) {
+        addMessage(
+          "Врачебное заключение сохранено.\n\n" +
+          "Заключение привязано к обращению " + selectedDoctorCase.id + ".",
+          "bot"
+        );
+
+        addTimeline("Сохранено врачебное заключение по обращению " + selectedDoctorCase.id + ".");
+        document.getElementById("doctorNote").value = "";
+      }
+    }
+
+    updateProfile();
+    renderHistory();
+    renderDoctorQueue();
+    resetDoctorCard();
+    startScenario();
+  </script>
+</body>
+</html>
