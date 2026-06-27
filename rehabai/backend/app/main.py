@@ -2,18 +2,21 @@
 
 Запуск (для разработки):  uvicorn app.main:app --reload
 Документация API:          /docs  (Swagger UI)
+Веб-интерфейс:             /      (статический файл app/static/index.html)
 
 ВАЖНО: система работает на демонстрационных (обезличенных) данных.
 Промышленный контур (защищённое хранилище, СКЗИ, интеграция с ЕМИАС,
 соответствие 152-ФЗ/323-ФЗ) в работе описывается как целевая архитектура.
 """
 
+import os
 import time
 from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from . import fhir, scoring
@@ -24,7 +27,7 @@ from .seed import seed
 
 app = FastAPI(
     title="RehabAI API",
-    version="1.0.0",
+    version="1.1.0",
     description="Демонстратор электронной карты реабилитационного обращения "
                 "и маршрутизации. Данные демонстрационные.",
 )
@@ -74,6 +77,18 @@ def health():
     return {"status": "ok", "service": "RehabAI API", "time": datetime.now(timezone.utc).isoformat()}
 
 
+# ---------- Расчёт приоритета (без сохранения) ----------
+
+@app.post("/api/score")
+def score(payload: AppealCreate):
+    """Возвращает приоритет, балл и маршрут по данным обращения, ничего не сохраняя.
+    Используется для предварительной оценки в интерфейсе."""
+    return scoring.compute(
+        payload.age_group, payload.severity, payload.duration,
+        payload.request_type, payload.factors, payload.symptom,
+    )
+
+
 # ---------- Обращения пациентов ----------
 
 @app.post("/api/appeals", response_model=AppealOut)
@@ -81,7 +96,7 @@ def create_appeal(payload: AppealCreate, db: Session = Depends(get_db)):
     """Создаёт обращение; приоритет, балл и маршрут рассчитывает сервер."""
     result = scoring.compute(
         payload.age_group, payload.severity, payload.duration,
-        payload.request_type, payload.factors,
+        payload.request_type, payload.factors, payload.symptom,
     )
     appeal = Appeal(
         id=_gen_id("PAT"),
@@ -93,6 +108,7 @@ def create_appeal(payload: AppealCreate, db: Session = Depends(get_db)):
         duration=payload.duration,
         severity=payload.severity,
         factors=payload.factors,
+        specialist=payload.specialist,
         priority=result["priority"],
         priority_score=result["score"],
         route=result["route"],
@@ -158,7 +174,7 @@ def add_decision(appeal_id: str, payload: DecisionCreate, db: Session = Depends(
     return appeal
 
 
-# ---------- Аналитика (для дашборда/презентации) ----------
+# ---------- Аналитика и обслуживание ----------
 
 @app.get("/api/stats")
 def stats(db: Session = Depends(get_db)):
@@ -174,3 +190,21 @@ def stats(db: Session = Depends(get_db)):
         "by_status": by_status,
         "decisions_total": db.query(Decision).count(),
     }
+
+
+@app.post("/api/admin/reset")
+def reset(db: Session = Depends(get_db)):
+    """Сброс базы к демонстрационным данным (для показа).
+    В целевой архитектуре операция доступна только администратору."""
+    db.query(Decision).delete()
+    db.query(Appeal).delete()
+    db.commit()
+    n = seed(db)
+    return {"reset": True, "seeded": n}
+
+
+# ---------- Статический веб-интерфейс ----------
+# Монтируется последним, чтобы не перекрывать /api/* и /docs.
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(STATIC_DIR):
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

@@ -37,7 +37,7 @@ def seed(db) -> int:
     now = datetime.now(timezone.utc)
     added = 0
     for i, (age, request, symptom, duration, severity, factors) in enumerate(_DEMO):
-        result = scoring.compute(age, severity, duration, request, factors)
+        result = scoring.compute(age, severity, duration, request, factors, symptom)
         appeal = Appeal(
             id=f"PAT-{100001 + i}",
             created_at=now - timedelta(hours=i * 7),

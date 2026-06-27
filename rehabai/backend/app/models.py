@@ -36,6 +36,7 @@ class Appeal(Base):
     duration: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     severity: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     factors: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    specialist: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # Поля ниже рассчитываются сервером (см. scoring.py) — клиент их не задаёт.
     priority: Mapped[str] = mapped_column(String, default="Низкий")

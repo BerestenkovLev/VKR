@@ -22,11 +22,26 @@ def _match_score(value: Optional[str], mapping: Dict[str, int], default: int = 1
     return default
 
 
-SEVERITY = {"выс": 3, "сред": 2, "низ": 1}
-DURATION = {"месяц": 3, "год": 3, "недел": 2, "дн": 1, "сутк": 1}
+# Интенсивность: поддерживаются формулировки интерфейса (Лёгкая/Умеренная/Сильная)
+# и обобщённые (низкая/средняя/высокая) — порядок важен, проверяется по подстроке.
+SEVERITY = {
+    "сильн": 3, "выс": 3,
+    "умерен": 2, "сред": 2,
+    "легк": 1, "низ": 1,
+}
 
-# Ключевые слова «красных флагов» — повышают приоритет на 1 балл.
-RED_FLAGS = ("движени", "реч", "самообслуж", "операц", "паден", "наруш", "глотани")
+# Длительность: "Более 3 дней" весомее, чем "Менее суток"/"1–3 дня".
+DURATION = {
+    "более": 2, "месяц": 3, "год": 3, "недел": 2,
+    "сутк": 1, "дн": 1,
+}
+
+# Факторы риска. Острое ухудшение — сильнее (+2), прочие значимые признаки — +1.
+ACUTE_FLAGS = ("резк", "ухудшени")
+RISK_FLAGS = (
+    "хроническ", "осложн", "движени", "ходьб", "реч", "памят",
+    "координац", "самообслуж", "операц", "инсульт", "невролог", "паден", "глотани",
+)
 
 
 def _age_factor(age_group: Optional[str]) -> int:
@@ -37,9 +52,13 @@ def _age_factor(age_group: Optional[str]) -> int:
     return 0
 
 
-def _flag_factor(factors: Optional[str]) -> int:
-    text = (factors or "").lower()
-    return 1 if any(flag in text for flag in RED_FLAGS) else 0
+def _flag_factor(text: str) -> int:
+    t = (text or "").lower()
+    if any(k in t for k in ACUTE_FLAGS):
+        return 2
+    if any(k in t for k in RISK_FLAGS):
+        return 1
+    return 0
 
 
 def _route_for(request_type: Optional[str], priority: str) -> str:
@@ -69,12 +88,16 @@ def compute(
     duration: Optional[str],
     request_type: Optional[str],
     factors: Optional[str],
+    symptom: Optional[str] = None,
 ) -> Dict:
-    """Возвращает {score, priority, route, breakdown} по входным данным обращения."""
+    """Возвращает {score, priority, route, breakdown} по данным обращения."""
     s_sev = _match_score(severity, SEVERITY, default=1)
     s_dur = _match_score(duration, DURATION, default=1)
     s_age = _age_factor(age_group)
-    s_flag = _flag_factor(factors)
+
+    # Факторы риска оцениваем по совокупности: указанные факторы + симптом + тип обращения.
+    flag_text = " ".join(filter(None, [factors, symptom, request_type]))
+    s_flag = _flag_factor(flag_text)
 
     score = s_sev + s_dur + s_age + s_flag
 

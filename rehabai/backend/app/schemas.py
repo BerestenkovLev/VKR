@@ -16,6 +16,7 @@ class AppealCreate(BaseModel):
     duration: Optional[str] = None
     severity: Optional[str] = None
     factors: Optional[str] = None
+    specialist: Optional[str] = None
 
 
 class DecisionCreate(BaseModel):
@@ -43,6 +44,7 @@ class AppealOut(BaseModel):
     duration: Optional[str] = None
     severity: Optional[str] = None
     factors: Optional[str] = None
+    specialist: Optional[str] = None
     priority: str
     priority_score: int
     route: str
