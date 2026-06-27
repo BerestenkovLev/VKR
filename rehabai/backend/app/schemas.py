@@ -49,4 +49,33 @@ class AppealOut(BaseModel):
     priority_score: int
     route: str
     status: str
+    owner: Optional[str] = None
     decisions: List[DecisionOut] = []
+
+
+# ---------- Авторизация ----------
+
+class LoginIn(BaseModel):
+    username: str
+    password: str
+
+
+class RegisterIn(BaseModel):
+    username: str
+    password: str
+    full_name: Optional[str] = None
+
+
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    username: str
+    role: str
+    full_name: Optional[str] = None
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    username: str
+    role: str
+    full_name: Optional[str] = None

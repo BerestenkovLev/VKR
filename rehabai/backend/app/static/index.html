@@ -960,15 +960,24 @@
     // при размещении на хостинге — к тому же источнику, что и страница.
     const API_BASE = location.protocol === "file:" ? "http://localhost:8000" : "";
 
+    // Состояние авторизации (демо). Токен хранится только в памяти страницы.
+    let authToken = null, authRole = null, authUser = null;
+
+    function authHeaders(base) {
+      const h = base ? Object.assign({}, base) : {};
+      if (authToken) h["Authorization"] = "Bearer " + authToken;
+      return h;
+    }
+
     async function apiGet(path) {
-      const res = await fetch(API_BASE + path);
+      const res = await fetch(API_BASE + path, { headers: authHeaders() });
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
     }
     async function apiPost(path, body) {
       const res = await fetch(API_BASE + path, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body || {})
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
@@ -993,6 +1002,33 @@
         factors: profile.factors,
         specialist: specialistChosen || null
       };
+    }
+
+    // Демонстрационный вход: используются предзаданные демо-учётки.
+    // Реальная роль приходит из учётной записи (решает сервер), а не выбирается на клиенте.
+    async function loginAs(roleKey) {
+      const creds = roleKey === "specialist"
+        ? { username: "doctor", password: "doctor123" }
+        : { username: "patient", password: "patient123" };
+      let data;
+      try {
+        data = await apiPost("/api/auth/login", creds);
+      } catch (e) {
+        addMessage("Не удалось выполнить вход. Убедитесь, что сервер запущен. (" + e.message + ")", "bot");
+        return;
+      }
+      authToken = data.access_token;
+      authRole = data.role;
+      authUser = data.username;
+      addTimeline("Выполнен вход: " + (data.full_name || data.username) + " — роль " + data.role + " (получен JWT-токен).");
+      addMessage("Выполнен демонстрационный вход (роль: " + data.role + "). В целевой архитектуре — вход через ЕСИА или корпоративную учётную запись.", "bot");
+      await renderHistory();
+      if (authRole === "specialist") {
+        await renderDoctorQueue();
+        startDoctorFlow();
+      } else {
+        startPatientFlow();
+      }
     }
     let selectedDoctorCase = null;
     let currentRole = "";
@@ -1281,21 +1317,15 @@
     function startScenario() {
       addMessage(
         "Здравствуйте! Я RehabAI — цифровой ассистент по реабилитации.\n\n" +
-        "Пожалуйста, выберите, кто инициирует обращение.",
+        "Войдите в систему. Роль (пациент или специалист) определяется учётной записью.",
         "bot"
       );
-      addTimeline("Система ожидает выбор роли пользователя.");
-      setStatus("Выбор роли");
+      addTimeline("Система ожидает вход пользователя.");
+      setStatus("Ожидание входа");
 
       setOptions([
-        {
-          label: "Я пациент",
-          action: startPatientFlow
-        },
-        {
-          label: "Я специалист",
-          action: startDoctorFlow
-        }
+        { label: "Войти как пациент", action: () => loginAs("patient") },
+        { label: "Войти как специалист", action: () => loginAs("specialist") }
       ]);
     }
 
@@ -1861,6 +1891,10 @@
     }
 
     async function renderDoctorQueue() {
+      if (authRole !== "specialist") {
+        doctorQueueEl.innerHTML = `<div class="empty-history">Очередь доступна специалисту.</div>`;
+        return;
+      }
       let appeals = [];
       try {
         appeals = await apiGet("/api/appeals");
@@ -1954,9 +1988,9 @@
     }
 
     updateProfile();
-    renderHistory();
-    renderDoctorQueue();
     resetDoctorCard();
+    historyList.innerHTML = `<div class="empty-history">Войдите в систему, чтобы увидеть записи.</div>`;
+    doctorQueueEl.innerHTML = `<div class="empty-history">Очередь доступна специалисту после входа.</div>`;
     startScenario();
   </script>
 </body>

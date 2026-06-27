@@ -53,9 +53,38 @@ def seed(db) -> int:
             priority_score=result["score"],
             route=result["route"],
             status="Новое",
+            owner="demo",
         )
         db.add(appeal)
         added += 1
 
     db.commit()
+    return added
+
+
+# Демонстрационные учётные записи (логин, пароль, роль, ФИО).
+# Пароли заданы в открытом виде ТОЛЬКО для демонстрации входа.
+_DEMO_USERS = [
+    ("patient", "patient123", "pacient", "Демо-пациент"),
+    ("doctor", "doctor123", "specialist", "Демо-специалист (врач ЛФК)"),
+]
+
+
+def seed_users(db) -> int:
+    """Создаёт демо-аккаунты, если их ещё нет. Возвращает число добавленных."""
+    from .models import User
+    from .auth import hash_password
+
+    added = 0
+    for username, password, role, full_name in _DEMO_USERS:
+        if db.get(User, username) is None:
+            db.add(User(
+                username=username,
+                password_hash=hash_password(password),
+                role=role,
+                full_name=full_name,
+            ))
+            added += 1
+    if added:
+        db.commit()
     return added

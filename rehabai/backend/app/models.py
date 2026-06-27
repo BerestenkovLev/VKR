@@ -44,6 +44,10 @@ class Appeal(Base):
     route: Mapped[str] = mapped_column(String, default="—")
     status: Mapped[str] = mapped_column(String, default="Новое")
 
+    # Владелец записи (имя учётной записи пациента). Очередь специалиста видит все,
+    # пациент — только свои обращения.
+    owner: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
     decisions: Mapped[List["Decision"]] = relationship(
         back_populates="appeal",
         cascade="all, delete-orphan",
@@ -64,3 +68,20 @@ class Decision(Base):
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     appeal: Mapped["Appeal"] = relationship(back_populates="decisions")
+
+
+class User(Base):
+    """Учётная запись пользователя (демонстрационная).
+
+    Пароли хранятся в виде PBKDF2-HMAC-SHA256 хэша с солью (см. auth.py).
+    В целевой архитектуре вход выполняется через ЕСИА / корпоративную
+    учётную запись, секреты — во внешнем хранилище, передача — по HTTPS.
+    """
+
+    __tablename__ = "users"
+
+    username: Mapped[str] = mapped_column(String, primary_key=True)
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+    role: Mapped[str] = mapped_column(String, nullable=False)  # 'pacient' | 'specialist'
+    full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
